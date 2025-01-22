@@ -9,8 +9,10 @@ public class PlayerMove : MonoBehaviour
     Animator animator;
 
     public float maxSpeed = 1.0f;
+    public float jumpPower = 1.0f;
     float h;
     bool horizontalReleased = false;
+    bool jumpPressed = false;
 
     void Awake()
     {
@@ -21,6 +23,12 @@ public class PlayerMove : MonoBehaviour
 
     void Update()
     {
+        //Jump
+        if (Input.GetButtonDown("Jump") && !animator.GetBool("isJumping"))
+        {
+            jumpPressed = true;
+        }
+
         //Direction Sprite
         h = Input.GetAxisRaw("Horizontal");
 
@@ -35,7 +43,7 @@ public class PlayerMove : MonoBehaviour
             horizontalReleased = true;
         }
 
-        if (rigid.velocity.magnitude < 0.3f)
+        if (Mathf.Abs(rigid.velocity.x) < 0.3f)
         {
             animator.SetBool("isWalking", false);
         }
@@ -46,6 +54,14 @@ public class PlayerMove : MonoBehaviour
     }
     void FixedUpdate()
     {
+        // Jump
+        if (jumpPressed)
+        {
+            animator.SetBool("isJumping", true);
+            rigid.AddForce(Vector2.up * jumpPower, ForceMode2D.Impulse);
+            jumpPressed = false;
+        }
+
         // Stop
         if (horizontalReleased)
         {
@@ -61,6 +77,18 @@ public class PlayerMove : MonoBehaviour
         {
             float sign = Mathf.Sign(rigid.velocity.x);
             rigid.velocity = new Vector2(maxSpeed * sign, rigid.velocity.y);
+        }
+
+        //Landing Platform
+        if (rigid.velocity.y < 0) {
+            Debug.DrawRay(rigid.position, Vector3.down, Color.yellow);
+
+            RaycastHit2D rayHit = Physics2D.Raycast(rigid.position, Vector3.down, 1, LayerMask.GetMask("Platform"));
+
+            if (rayHit.collider != null && rayHit.distance < 0.5f)
+            {
+                animator.SetBool("isJumping", false);
+            }
         }
     }
 }
