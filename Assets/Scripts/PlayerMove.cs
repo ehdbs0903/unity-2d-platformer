@@ -10,6 +10,7 @@ public class PlayerMove : MonoBehaviour
 
     public float maxSpeed = 1.0f;
     public float jumpPower = 1.0f;
+    public float reactPower = 1.0f;
     float h;
     bool horizontalReleased = false;
     bool jumpPressed = false;
@@ -90,5 +91,39 @@ public class PlayerMove : MonoBehaviour
                 animator.SetBool("isJumping", false);
             }
         }
+    }
+
+    void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.tag == "Enemy")
+        {
+            Vector2 contactPoint = collision.contacts[0].point;
+            OnDamaged(contactPoint);
+        }
+    }
+
+    IEnumerator Invincibility(float duration)
+    {
+        gameObject.layer = 9;
+
+        // View Alpha
+        spriteRenderer.color = new Color(1, 1, 1, 0.4f);
+
+        yield return new WaitForSeconds(duration);
+
+        gameObject.layer = 8;
+        spriteRenderer.color = new Color(1, 1, 1, 1);
+    }
+
+    void OnDamaged(Vector2 targetPos)
+    {
+        // Reaction Force
+        int direction = transform.position.x - targetPos.x > 0 ? 1 : -1;
+        rigid.AddForce(new Vector2(direction, 1) * reactPower, ForceMode2D.Impulse);
+
+        //Animation
+        animator.SetTrigger("Damaged");
+
+        StartCoroutine(Invincibility(2.0f));
     }
 }
