@@ -98,8 +98,29 @@ public class PlayerMove : MonoBehaviour
         if (collision.gameObject.tag == "Enemy")
         {
             Vector2 contactPoint = collision.contacts[0].point;
-            OnDamaged(contactPoint);
+
+            //Attack
+            if (rigid.velocity.y < 0 && transform.position.y > contactPoint.y)
+            {
+                OnAttack(collision.transform);
+            }
+            else //Damgaed
+            {
+                OnDamaged(contactPoint);
+            }
         }
+    }
+
+    void OnAttack(Transform enemy)
+    {
+        // Point
+
+        // Reaction Force
+        rigid.AddForce(Vector2.up * 5, ForceMode2D.Impulse);
+
+        // Enemy Die
+        EnemyMove enemyMove = enemy.GetComponent<EnemyMove>();
+        enemyMove.OnDamaged();
     }
 
     IEnumerator Invincibility(float duration)
