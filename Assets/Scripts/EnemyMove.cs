@@ -61,8 +61,7 @@ public class EnemyMove : MonoBehaviour
 
     void ChangeDirection()
     {
-        StopAllCoroutines();
-        StartCoroutine(ThinkRoutine());
+        nextMove = -nextMove;
     }
 
     IEnumerator DieRoutine()
